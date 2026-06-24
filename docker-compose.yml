@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: telecom-test-platform-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: telecom_test_platform
+      POSTGRES_USER: telecom
+      POSTGRES_PASSWORD: telecom
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: telecom-test-platform-backend
+    depends_on:
+      - postgres
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://telecom:telecom@postgres:5432/telecom_test_platform
+      JWT_SECRET: change-me-local-secret
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - "4000:4000"
+    command: sh -c "npm run db:migrate && npm run db:seed && npm start"
+
+  frontend:
+    build: ./frontend
+    container_name: telecom-test-platform-frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data:

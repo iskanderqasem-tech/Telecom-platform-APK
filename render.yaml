@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: telecom-test-platform-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run db:migrate && npm run db:seed
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: telecom-test-platform-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://telecom-test-platform-frontend.onrender.com
+
+  - type: web
+    name: telecom-test-platform-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://telecom-test-platform-backend.onrender.com
+
+databases:
+  - name: telecom-test-platform-db
+    databaseName: telecom_test_platform
+    user: telecom
