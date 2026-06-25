@@ -1,0 +1,30 @@
+name: Android Agent Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'android-agent/**'
+      - '.github/workflows/android-agent-build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Generate Gradle wrapper if missing
+        working-directory: android-agent
+        run: gradle wrapper --gradle-version 8.9
+      - name: Build debug APK
+        working-directory: android-agent
+        run: ./gradlew assembleDebug
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: telecom-agent-v1-debug-apk
+          path: android-agent/app/build/outputs/apk/debug/*.apk
